@@ -228,35 +228,40 @@
         <button onclick="closeNotice()">Understood</button>
     </div>
 
-    <!-- Scramjet Scripts - Now loading from /static/ -->
+    <!-- Scramjet Scripts - Loading from /static/ as requested -->
     <script src="/static/scramjet.all.js"></script>
     <script>
         let scramjet = null;
         let frame = null;
 
-        function initScramjet() {
+        async function initScramjet() {
             if (typeof $scramjetLoadController === "undefined") {
-                console.error("❌ Scramjet not loaded. Make sure /static/scramjet.all.js exists.");
-                document.getElementById('splash').textContent = "scramjet load failed";
+                console.error("❌ Scramjet.all.js not loaded. Make sure the file is in /static/");
+                document.getElementById('splash').textContent = "Scramjet failed to load";
                 return;
             }
 
-            const { ScramjetController } = $scramjetLoadController();
-           
-            scramjet = new ScramjetController({
-                files: {
-                    wasm: "/static/scramjet.wasm.wasm",
-                    all: "/static/scramjet.all.js",
-                    sync: "/static/scramjet.sync.js"
-                }
-            });
+            try {
+                const { ScramjetController } = $scramjetLoadController();
+                
+                scramjet = new ScramjetController({
+                    files: {
+                        wasm: "/static/scramjet.wasm.wasm",
+                        all: "/static/scramjet.all.js",
+                        sync: "/static/scramjet.sync.js"
+                    }
+                });
 
-            scramjet.init();
+                scramjet.init();
 
-            // Register Service Worker from static folder
-            navigator.serviceWorker.register("/static/sw.js", { scope: "/" })
-                .then(reg => console.log("✅ Service Worker registered"))
-                .catch(err => console.error("❌ Service Worker failed:", err));
+                navigator.serviceWorker.register("/static/sw.js", { scope: "/" })
+                    .then(() => console.log("✅ Service Worker registered"))
+                    .catch(err => console.error("Service Worker failed:", err));
+
+                console.log("✅ Scramjet initialized");
+            } catch (err) {
+                console.error("Failed to init Scramjet:", err);
+            }
         }
 
         function getFrame() {
@@ -264,7 +269,7 @@
             return frame;
         }
 
-        // Search handler - now defaults to YouTube when searching
+        // Search handler
         document.getElementById("homesearchlol").addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
                 let query = e.target.value.trim();
@@ -275,18 +280,22 @@
                     : `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
                 if (!scramjet) {
-                    alert("Scramjet is not ready yet. Please refresh the page.");
+                    alert("Scramjet is still loading. Please wait a moment and try again.");
                     return;
                 }
 
-                const proxiedUrl = scramjet.encodeUrl(targetUrl);
-                document.getElementById("scramjet-frame").style.display = "block";
-                const f = getFrame();
-                if (f) f.go(proxiedUrl);
+                try {
+                    const proxiedUrl = scramjet.encodeUrl(targetUrl);
+                    document.getElementById("scramjet-frame").style.display = "block";
+                    const f = getFrame();
+                    if (f) f.go(proxiedUrl);
+                } catch (err) {
+                    console.error("Proxy error:", err);
+                }
             }
         });
 
-        // Particle System (kept exactly as you had it)
+        // Particle System
         const pJS = function(tag_id) {
             const canvas_el = document.createElement('canvas');
             canvas_el.style.width = "100%";
@@ -340,6 +349,7 @@
             const splashes = ["ggs", "error: could not load splash", "best game site ever?", "7 8", "w o w", "partnered with everyone"];
             document.getElementById('splash').textContent = splashes[Math.floor(Math.random() * splashes.length)];
 
+            // Sidebar animation
             ['section1nav', 'section2nav', 'section3nav'].forEach((id, index) => {
                 setTimeout(() => {
                     const el = document.getElementById(id);
@@ -347,6 +357,7 @@
                 }, 150 + (index * 120));
             });
 
+            // Notice box
             setTimeout(() => {
                 document.getElementById('noticeBox').classList.remove('hidden');
                 const bluroverlay = document.createElement("div");
@@ -354,6 +365,7 @@
                 document.body.appendChild(bluroverlay);
             }, 1000);
 
+            // Start Scramjet
             setTimeout(initScramjet, 800);
         };
     </script>
