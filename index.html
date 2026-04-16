@@ -21,7 +21,7 @@
             --text-grey: #b0b0b0;
             --nav-width: 75px;
             --tooltip-bg: #1a1a1a;
-           
+          
             /* Title Gradient */
             --cherri-pink-light: #ffb3d9;
             --cherri-pink-mid: #f365ac;
@@ -203,7 +203,7 @@
     <div class="container">
         <h1 class="hometitle">Spatium</h1>
         <p id="splash">loading...</p>
-       
+      
         <div class="inputcontainer">
             <i class="fa-solid fa-magnifying-glass" style="color: var(--text-bright-grey);"></i>
             <input type="text" id="homesearchlol" placeholder="Search YouTube or Google..." autocomplete="off">
@@ -228,50 +228,43 @@
         <button onclick="closeNotice()">Understood</button>
     </div>
 
-    <!-- Scramjet Scripts -->
-    <script src="/scram/scramjet.all.js"></script>
+    <!-- Scramjet Scripts - Now loading from /static/ -->
+    <script src="/static/scramjet.all.js"></script>
     <script>
         let scramjet = null;
         let frame = null;
 
-        // Initialize Scramjet with delay to ensure script is loaded
         function initScramjet() {
             if (typeof $scramjetLoadController === "undefined") {
-                console.error("❌ Scramjet.all.js not loaded. Check if Live Server is running on port 8080 and /scram/scramjet.all.js exists.");
+                console.error("❌ Scramjet not loaded. Make sure /static/scramjet.all.js exists.");
                 document.getElementById('splash').textContent = "scramjet load failed";
                 return;
             }
 
             const { ScramjetController } = $scramjetLoadController();
-            
+           
             scramjet = new ScramjetController({
                 files: {
-                    wasm: "/scram/scramjet.wasm.wasm",
-                    all: "/scram/scramjet.all.js",
-                    sync: "/scram/scramjet.sync.js"
+                    wasm: "/static/scramjet.wasm.wasm",
+                    all: "/static/scramjet.all.js",
+                    sync: "/static/scramjet.sync.js"
                 }
             });
 
             scramjet.init();
 
-            // Register Service Worker
-            navigator.serviceWorker.register("/scram/sw.js", { scope: "/" })
-                .then(reg => {
-                    console.log("✅ Service Worker registered successfully on port 8080");
-                })
-                .catch(err => {
-                    console.error("❌ Service Worker registration failed:", err);
-                });
+            // Register Service Worker from static folder
+            navigator.serviceWorker.register("/static/sw.js", { scope: "/" })
+                .then(reg => console.log("✅ Service Worker registered"))
+                .catch(err => console.error("❌ Service Worker failed:", err));
         }
 
         function getFrame() {
-            if (!frame && scramjet) {
-                frame = scramjet.createFrame();
-            }
+            if (!frame && scramjet) frame = scramjet.createFrame();
             return frame;
         }
 
-        // Search handler
+        // Search handler - now defaults to YouTube when searching
         document.getElementById("homesearchlol").addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
                 let query = e.target.value.trim();
@@ -282,8 +275,7 @@
                     : `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
                 if (!scramjet) {
-                    console.error("Scramjet not initialized yet");
-                    alert("Scramjet is not ready. Please refresh the page.");
+                    alert("Scramjet is not ready yet. Please refresh the page.");
                     return;
                 }
 
@@ -294,7 +286,7 @@
             }
         });
 
-        // Particle System
+        // Particle System (kept exactly as you had it)
         const pJS = function(tag_id) {
             const canvas_el = document.createElement('canvas');
             canvas_el.style.width = "100%";
@@ -342,14 +334,12 @@
             if (overlay) overlay.remove();
         }
 
-        // Start everything
         window.onload = () => {
             pJS('particles-js');
 
             const splashes = ["ggs", "error: could not load splash", "best game site ever?", "7 8", "w o w", "partnered with everyone"];
             document.getElementById('splash').textContent = splashes[Math.floor(Math.random() * splashes.length)];
 
-            // Sidebar animation
             ['section1nav', 'section2nav', 'section3nav'].forEach((id, index) => {
                 setTimeout(() => {
                     const el = document.getElementById(id);
@@ -357,7 +347,6 @@
                 }, 150 + (index * 120));
             });
 
-            // Notice box
             setTimeout(() => {
                 document.getElementById('noticeBox').classList.remove('hidden');
                 const bluroverlay = document.createElement("div");
@@ -365,8 +354,7 @@
                 document.body.appendChild(bluroverlay);
             }, 1000);
 
-            // Initialize Scramjet
-            setTimeout(initScramjet, 800); // small delay to ensure script is ready
+            setTimeout(initScramjet, 800);
         };
     </script>
 </body>
