@@ -228,7 +228,7 @@
         <button onclick="closeNotice()">Understood</button>
     </div>
 
-    <!-- Scramjet Scripts - Loading from /static/ as requested -->
+    <!-- Scramjet Scripts - Now from /static/ -->
     <script src="/static/scramjet.all.js"></script>
     <script>
         let scramjet = null;
@@ -236,7 +236,7 @@
 
         async function initScramjet() {
             if (typeof $scramjetLoadController === "undefined") {
-                console.error("❌ Scramjet.all.js not loaded. Make sure the file is in /static/");
+                console.error("❌ Scramjet.all.js not loaded. Make sure files are in /static/");
                 document.getElementById('splash').textContent = "Scramjet failed to load";
                 return;
             }
@@ -256,7 +256,7 @@
 
                 navigator.serviceWorker.register("/static/sw.js", { scope: "/" })
                     .then(() => console.log("✅ Service Worker registered"))
-                    .catch(err => console.error("Service Worker failed:", err));
+                    .catch(err => console.error("❌ Service Worker failed:", err));
 
                 console.log("✅ Scramjet initialized");
             } catch (err) {
